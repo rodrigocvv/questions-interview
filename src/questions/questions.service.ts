@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { QuestionDTO } from './questions.model';
@@ -15,12 +15,21 @@ export class QuestionsService {
     }
 
     async findById(_id: string): Promise<QuestionDTO> {
-        const question: QuestionDocument = await this.questionModel.findById(_id);
+        let question: QuestionDocument;
+        try {
+            question = await this.questionModel.findById(_id);
+        } catch (e) {
+            throw new HttpException('No data', HttpStatus.NO_CONTENT);
+        }
         return this.getDTO(question);
     }
 
-    async delete(questionDTO: QuestionDTO): Promise<void> {
-        await this.questionModel.deleteOne({ _id: questionDTO._id });
+    async delete(id: string): Promise<void> {
+        try {
+            await this.questionModel.deleteOne({ _id: id });
+        } catch (e) {
+            throw new HttpException('No data', HttpStatus.NO_CONTENT);
+        }
     }
 
     private getDTO(question: QuestionDocument): QuestionDTO {

@@ -1,12 +1,13 @@
-import { HttpException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { QuestionsController } from './questions.controller';
 import { QuestionDTO } from './questions.model';
 import { QuestionsSchema } from './questions.schema';
 import { QuestionsService } from './questions.service';
 
-describe('QuestionsService', () => {
+describe('QuestionsController', () => {
+    let questionsController: QuestionsController;
     let questionsService: QuestionsService;
     let mongodb: MongoMemoryServer;
     let moduleRef: TestingModule;
@@ -19,10 +20,11 @@ describe('QuestionsService', () => {
                 MongooseModule.forRoot(mongoUri),
                 MongooseModule.forFeature([{ name: 'questions', schema: QuestionsSchema }])
             ],
-            controllers: [],
+            controllers: [QuestionsController],
             providers: [QuestionsService],
         }).compile();
         questionsService = moduleRef.get<QuestionsService>(QuestionsService);
+        questionsController = moduleRef.get<QuestionsController>(QuestionsController);
     });
 
     afterAll(async () => {
@@ -34,7 +36,9 @@ describe('QuestionsService', () => {
         expect(questionsService).toBeDefined();
     });
 
-    let questionDB: QuestionDTO;
+    it('controller should be defined', () => {
+        expect(questionsController).toBeDefined();
+    });
 
     it('should create a new question', async () => {
         const question: QuestionDTO = {
@@ -43,32 +47,32 @@ describe('QuestionsService', () => {
             subject: 'test subject',
             type: 'test type'
         }
-        questionDB = await questionsService.create(question);
-        expect(questionDB._id).not.toBeNull();
-    });
-
-    it('should find by id', async () => {
-        questionDB = await questionsService.findById(questionDB._id);
-        expect(questionDB._id).not.toBeNull();
-    });
-
-    it('should not find by id', async () => {
-        try {
-            await questionsService.findById('999');
-        } catch (error) {
-            expect(error).toBeInstanceOf(HttpException);
+        const questionDB: QuestionDTO = {
+            _id: '123',
+            description: 'test description',
+            answer: 'test answer',
+            subject: 'test subject',
+            type: 'test type'
         }
+        jest.spyOn(questionsService, 'create').mockResolvedValue(questionDB);
+        await expect(questionsController.create(question)).resolves.not.toThrow();
     });
 
-    it('should delete', async () => {
-        await expect(questionsService.delete(questionDB._id)).resolves.not.toThrow();
-    });
-
-    it('should not delete', async () => {
-        try {
-            await questionsService.delete('999');
-        } catch (error) {
-            expect(error).toBeInstanceOf(HttpException);
+    it('should find a question by id', async () => {
+        const questionDB: QuestionDTO = {
+            _id: '123',
+            description: 'test description',
+            answer: 'test answer',
+            subject: 'test subject',
+            type: 'test type'
         }
+        jest.spyOn(questionsService, 'findById').mockResolvedValue(questionDB);
+        await expect(questionsController.findById('123')).resolves.not.toThrow();
     });
+
+    it('should delete a question by id', async () => {
+        jest.spyOn(questionsService, 'delete').mockResolvedValue(undefined);
+        await expect(questionsController.delete('123')).resolves.not.toThrow();
+    });
+
 });
