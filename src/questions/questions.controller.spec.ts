@@ -106,6 +106,28 @@ describe('QuestionsController', () => {
         }
     });
 
+    it('should get a list of all subjects', async () => {
+        const questionDB: QuestionDTO = {
+            _id: '123',
+            description: 'test description',
+            answer: 'test answer',
+            subject: 'test subject',
+            type: 'test type'
+        }
+        jest.spyOn(questionsService, 'findAll').mockResolvedValue([questionDB]);
+        const subjectsList = await questionsController.getAllSubjects();
+        expect(subjectsList[0]).toEqual(questionDB.subject);
+    });    
+
+    it('should not get list of subjects', async () => {
+        jest.spyOn(questionsService, 'findAll').mockResolvedValue([]);
+        try {
+            await questionsController.getAllSubjects();
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpException);
+        }
+    });    
+
     it('should delete a question by id', async () => {
         jest.spyOn(questionsService, 'delete').mockResolvedValue(undefined);
         await expect(questionsController.delete('123')).resolves.not.toThrow();

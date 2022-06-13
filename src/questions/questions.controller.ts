@@ -56,4 +56,20 @@ export class QuestionsController {
         return selectedQuestion;
     }
 
+    @ApiOperation({ summary: 'Returns one random question by subject', description: 'Use 0 for all subjects' })
+    @ApiResponse({ status: 204 })
+    @ApiResponse({
+        status: 200,
+        type: String,
+        isArray: true
+    })    
+    @Get('subjects/all')
+    async getAllSubjects(): Promise<String[]> {
+        const questionsList: QuestionDTO[] = await this.questionsService.findAll();
+        if (!questionsList || questionsList.length === 0) {
+            throw new HttpException('No data', HttpStatus.NO_CONTENT);
+        }
+        return [...new Set(questionsList.map(question => question.subject))];
+    }    
+
 }
