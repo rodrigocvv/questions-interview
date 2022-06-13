@@ -32,6 +32,16 @@ export class QuestionsService {
         }
     }
 
+    async findAll(): Promise<QuestionDTO[]> {
+        const questionDocumentList: QuestionDocument[] = await this.questionModel.find({});
+        return questionDocumentList.map(doc => this.getDTO(doc));
+    }
+
+    async findBySubject(subject: string): Promise<QuestionDTO[]> {
+        const questionDocumentList: QuestionDocument[] = await this.questionModel.find({ subject });
+        return questionDocumentList.map(doc => this.getDTO(doc));
+    }    
+
     private getDTO(question: QuestionDocument): QuestionDTO {
         return {
             _id: question._id,

@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -68,6 +69,41 @@ describe('QuestionsController', () => {
         }
         jest.spyOn(questionsService, 'findById').mockResolvedValue(questionDB);
         await expect(questionsController.findById('123')).resolves.not.toThrow();
+    });
+
+    it('should find a random question by subject', async () => {
+        const questionDB: QuestionDTO = {
+            _id: '123',
+            description: 'test description',
+            answer: 'test answer',
+            subject: 'test subject',
+            type: 'test type'
+        }
+        jest.spyOn(questionsService, 'findBySubject').mockResolvedValue([questionDB]);
+        const question = await questionsController.getRandomQuestion('test subject');
+        expect(question).not.toBeNull();
+    });
+
+    it('should find a random question', async () => {
+        const questionDB: QuestionDTO = {
+            _id: '123',
+            description: 'test description',
+            answer: 'test answer',
+            subject: 'test subject',
+            type: 'test type'
+        }
+        jest.spyOn(questionsService, 'findAll').mockResolvedValue([questionDB]);
+        const question = await questionsController.getRandomQuestion('0');
+        expect(question).not.toBeNull();
+    });
+
+    it('should not find by a random question', async () => {
+        jest.spyOn(questionsService, 'findAll').mockResolvedValue([]);
+        try {
+            await questionsController.getRandomQuestion('0');
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpException);
+        }
     });
 
     it('should delete a question by id', async () => {

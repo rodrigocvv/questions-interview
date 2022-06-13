@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import {
     ApiExtraModels,
     ApiOperation,
@@ -28,9 +28,10 @@ export class QuestionsController {
             $ref: getSchemaPath(QuestionDTO),
         },
     })
-    @Get(':id')
+
     @ApiOperation({ summary: 'Returns one question by id' })
     @ApiResponse({ status: 204 })
+    @Get(':id')
     async findById(@Param('id') id: string): Promise<QuestionDTO> {
         return await this.questionsService.findById(id)
     }
@@ -41,6 +42,18 @@ export class QuestionsController {
     @ApiResponse({ status: 204 })
     async delete(@Param('id') id: string) {
         await this.questionsService.delete(id);
+    }
+
+    @ApiOperation({ summary: 'Returns one random question by subject', description: 'Use 0 for all subjects' })
+    @ApiResponse({ status: 204 })
+    @Get('random/:subject')
+    async getRandomQuestion(@Param('subject') subject: string): Promise<QuestionDTO> {
+        const questionsList: QuestionDTO[] = !subject || subject === '0' ? await this.questionsService.findAll() : await this.questionsService.findBySubject(subject);
+        const selectedQuestion: QuestionDTO = questionsList[Math.floor(Math.random() * questionsList.length)];
+        if (!selectedQuestion) {
+            throw new HttpException('No data', HttpStatus.NO_CONTENT);
+        }
+        return selectedQuestion;
     }
 
 }

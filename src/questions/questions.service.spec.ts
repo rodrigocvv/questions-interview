@@ -40,7 +40,7 @@ describe('QuestionsService', () => {
         const question: QuestionDTO = {
             description: 'test description',
             answer: 'test answer',
-            subject: 'test subject',
+            subject: 'nodejs',
             type: 'test type'
         }
         questionDB = await questionsService.create(question);
@@ -60,6 +60,24 @@ describe('QuestionsService', () => {
         }
     });
 
+    it('should find all questions', async () => {
+        try {
+            const questionsList: QuestionDTO[] = await questionsService.findAll();
+            expect(questionsList).not.toBeNull();
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpException);
+        }
+    });
+
+    it('should find questions by ssubject', async () => {
+        try {
+            const questionsList: QuestionDTO[] = await questionsService.findBySubject('nodejs');
+            expect(questionsList).not.toBeNull();
+        } catch (error) {
+            expect(error).toBeInstanceOf(HttpException);
+        }
+    });    
+
     it('should delete', async () => {
         await expect(questionsService.delete(questionDB._id)).resolves.not.toThrow();
     });
@@ -71,4 +89,5 @@ describe('QuestionsService', () => {
             expect(error).toBeInstanceOf(HttpException);
         }
     });
+
 });
